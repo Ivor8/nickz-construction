@@ -50,7 +50,12 @@ router.get('/admin/all', authMiddleware, async (req, res) => {
     const quoteRequests = await QuoteRequest.find()
       .populate('service_id', 'title')
       .sort({ created_at: -1 });
-    res.json(quoteRequests);
+    // Transform _id to id for frontend compatibility
+    const transformedQuotes = quoteRequests.map(quote => ({
+      ...quote.toObject(),
+      id: quote._id.toString()
+    }));
+    res.json(transformedQuotes);
   } catch (error) {
     console.error('Get quote requests error:', error);
     res.status(500).json({ message: 'Server error' });

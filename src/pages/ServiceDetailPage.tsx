@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { servicesAPI, getImageUrl } from '@/lib/api';
+import { servicesAPI, quotesAPI, getImageUrl } from '@/lib/api';
 import Layout from '@/components/Layout';
 import ScrollReveal from '@/components/ScrollReveal';
 import type { Service } from '@/lib/types';
@@ -36,20 +36,21 @@ const ServiceDetailPage: React.FC = () => {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.from('quote_requests').insert({
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      service_id: service?.id,
-      project_details: formData.details,
-      timeline: formData.timeline,
-    });
-    setSubmitting(false);
-    if (error) {
-      toast({ title: 'Error', description: 'Failed to submit. Please try again.', variant: 'destructive' });
-    } else {
+    try {
+      await quotesAPI.create({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service_id: service?.id,
+        project_details: formData.details,
+        timeline: formData.timeline,
+      });
       toast({ title: 'Success!', description: 'Your quote request has been submitted. We will contact you soon.' });
       setFormData({ name: '', email: '', phone: '', details: '', timeline: '' });
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to submit. Please try again.', variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
     }
   };
 

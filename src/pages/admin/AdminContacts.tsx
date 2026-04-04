@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { contactsAPI, quotesAPI } from '@/lib/api';
 import type { Contact, QuoteRequest } from '@/lib/types';
 import { Mail, FileText, Trash2, Eye, X, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -14,12 +14,16 @@ const AdminContacts: React.FC = () => {
   const { toast } = useToast();
 
   const fetchData = async () => {
-    const [c, q] = await Promise.all([
-      supabase.from('contacts').select('*').order('created_at', { ascending: false }),
-      supabase.from('quote_requests').select('*').order('created_at', { ascending: false }),
-    ]);
-    if (c.data) setContacts(c.data);
-    if (q.data) setQuotes(q.data);
+    try {
+      const [c, q] = await Promise.all([
+        contactsAPI.getAllAdmin(),
+        quotesAPI.getAllAdmin(),
+      ]);
+      setContacts(c);
+      setQuotes(q);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    }
     setLoading(false);
   };
 
@@ -27,32 +31,40 @@ const AdminContacts: React.FC = () => {
 
   const markContactRead = async (contact: Contact) => {
     if (!contact.is_read) {
-      await supabase.from('contacts').update({ is_read: true }).eq('id', contact.id);
+      await contactsAPI.markAsRead(contact.id);
     }
     setSelectedContact(contact);
   };
 
   const markQuoteRead = async (quote: QuoteRequest) => {
     if (!quote.is_read) {
-      await supabase.from('quote_requests').update({ is_read: true }).eq('id', quote.id);
+      await quotesAPI.markAsRead(quote.id);
     }
     setSelectedQuote(quote);
   };
 
   const deleteContact = async (id: string) => {
     if (!confirm('Delete this message?')) return;
-    await supabase.from('contacts').delete().eq('id', id);
-    toast({ title: 'Deleted' });
-    setSelectedContact(null);
-    fetchData();
+    try {
+      await contactsAPI.delete(id);
+      toast({ title: 'Deleted' });
+      setSelectedContact(null);
+      fetchData();
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to delete contact', variant: 'destructive' });
+    }
   };
 
   const deleteQuote = async (id: string) => {
     if (!confirm('Delete this quote request?')) return;
-    await supabase.from('quote_requests').delete().eq('id', id);
-    toast({ title: 'Deleted' });
-    setSelectedQuote(null);
-    fetchData();
+    try {
+      await quotesAPI.delete(id);
+      toast({ title: 'Deleted' });
+      setSelectedQuote(null);
+      fetchData();
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to delete quote', variant: 'destructive' });
+    }
   };
 
   return (

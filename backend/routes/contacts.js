@@ -44,7 +44,12 @@ router.post('/', [
 router.get('/admin/all', authMiddleware, async (req, res) => {
   try {
     const contacts = await Contact.find().sort({ created_at: -1 });
-    res.json(contacts);
+    // Transform _id to id for frontend compatibility
+    const transformedContacts = contacts.map(contact => ({
+      ...contact.toObject(),
+      id: contact._id.toString()
+    }));
+    res.json(transformedContacts);
   } catch (error) {
     console.error('Get contacts error:', error);
     res.status(500).json({ message: 'Server error' });
