@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { projectsAPI } from '@/lib/api';
 import type { Project } from '@/lib/types';
 import { Plus, Pencil, Trash2, X, Save, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const emptyProject = { title: '', slug: '', category: 'Residential', short_description: '', description: '', location: '', highlights: '', images: '', is_featured: false, completed_date: '' };
+const emptyProject = { title: '', slug: '', category: 'Residential', short_description: '', description: '', location: '', highlights: '', images: '', is_featured: false, completed_date: '', imageFiles: [] as File[] };
 
 const AdminProjects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -16,8 +16,12 @@ const AdminProjects: React.FC = () => {
   const { toast } = useToast();
 
   const fetchProjects = async () => {
-    const { data } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
-    if (data) setProjects(data);
+    try {
+      const data = await projectsAPI.getAllAdmin();
+      setProjects(data);
+    } catch (error) {
+      console.error('Failed to fetch projects:', error);
+    }
     setLoading(false);
   };
 
@@ -32,34 +36,40 @@ const AdminProjects: React.FC = () => {
       return;
     }
     setSaving(true);
-    const payload = {
-      title: form.title,
-      slug: form.slug || generateSlug(form.title),
-      category: form.category,
-      short_description: form.short_description,
-      description: form.description,
-      location: form.location,
-      highlights: form.highlights ? form.highlights.split('\n').filter(Boolean) : [],
-      images: form.images ? form.images.split('\n').filter(Boolean) : [],
-      is_featured: form.is_featured,
-      completed_date: form.completed_date || null,
-    };
 
-    let error;
-    if (editing) {
-      ({ error } = await supabase.from('projects').update(payload).eq('id', editing));
-    } else {
-      ({ error } = await supabase.from('projects').insert(payload));
-    }
-    setSaving(false);
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Success', description: `Project ${editing ? 'updated' : 'created'} successfully.` });
+    const formData = new FormData();
+    formData.append('title', form.title);
+    formData.append('slug', form.slug || generateSlug(form.title));
+    formData.append('category', form.category);
+    formData.append('short_description', form.short_description);
+    formData.append('description', form.description);
+    formData.append('location', form.location);
+    formData.append('highlights', JSON.stringify(form.highlights ? form.highlights.split('\n').filter(Boolean) : []));
+    formData.append('images', JSON.stringify(form.images ? form.images.split('\n').filter(Boolean) : []));
+    formData.append('is_featured', form.is_featured.toString());
+    formData.append('completed_date', form.completed_date || '');
+    
+    form.imageFiles.forEach((file, index) => {
+      formData.append(`images`, file);
+    });
+
+    try {
+      if (editing) {
+        await projectsAPI.update(editing, formData);
+        toast({ title: 'Success', description: 'Project updated successfully.' });
+      } else {
+        await projectsAPI.create(formData);
+        toast({ title: 'Success', description: 'Project created successfully.' });
+      }
+      
       setShowForm(false);
       setEditing(null);
       setForm(emptyProject);
       fetchProjects();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to save project.', variant: 'destructive' });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -75,6 +85,7 @@ const AdminProjects: React.FC = () => {
       images: project.images?.join('\n') || '',
       is_featured: project.is_featured,
       completed_date: project.completed_date || '',
+      imageFiles: [],
     });
     setEditing(project.id);
     setShowForm(true);
@@ -82,12 +93,12 @@ const AdminProjects: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this project?')) return;
-    const { error } = await supabase.from('projects').delete().eq('id', id);
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
+    try {
+      await projectsAPI.delete(id);
       toast({ title: 'Deleted', description: 'Project deleted successfully.' });
       fetchProjects();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to delete project.', variant: 'destructive' });
     }
   };
 
@@ -144,8 +155,20 @@ const AdminProjects: React.FC = () => {
                 <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={4} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#1F2F8F] outline-none text-sm resize-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image URLs (one per line)</label>
-                <textarea value={form.images} onChange={e => setForm(p => ({ ...p, images: e.target.value }))} rows={3} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#1F2F8F] outline-none text-sm resize-none" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image Upload (multiple files)</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  multiple 
+                  onChange={e => setForm(p => ({ ...p, imageFiles: Array.from(e.target.files || []) }))} 
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#1F2F8F] outline-none text-sm" 
+                />
+                {form.imageFiles.length > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">Selected: {form.imageFiles.length} file(s)</p>
+                )}
+                {form.images && !form.imageFiles.length && (
+                  <p className="text-xs text-gray-500 mt-1">Current images: {form.images.split('\n').length} image(s)</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Highlights (one per line)</label>

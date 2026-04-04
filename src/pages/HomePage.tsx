@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
 import { BRAND, IMAGES } from '@/lib/constants';
 import type { Service, Project, Review } from '@/lib/types';
 import Layout from '@/components/Layout';
 import ScrollReveal from '@/components/ScrollReveal';
 import { ArrowRight, Building2, Hammer, HardHat, Award, Users, Globe, Star, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { servicesAPI, projectsAPI, reviewsAPI } from '@/lib/api';
 
 const HomePage: React.FC = () => {
   const [services, setServices] = useState<Service[]>([]);
@@ -15,14 +15,18 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [sRes, pRes, rRes] = await Promise.all([
-        supabase.from('services').select('*').order('sort_order').limit(6),
-        supabase.from('projects').select('*').eq('is_featured', true).limit(4),
-        supabase.from('reviews').select('*').eq('is_approved', true).limit(6),
-      ]);
-      if (sRes.data) setServices(sRes.data);
-      if (pRes.data) setProjects(pRes.data);
-      if (rRes.data) setReviews(rRes.data);
+      try {
+        const [sRes, pRes, rRes] = await Promise.all([
+          servicesAPI.getAll(),
+          projectsAPI.getAll(undefined),
+          reviewsAPI.getAll(),
+        ]);
+        setServices(sRes);
+        setProjects(pRes);
+        setReviews(rRes);
+      } catch (error) {
+        console.error('Error fetching home data:', error);
+      }
     };
     fetchData();
   }, []);

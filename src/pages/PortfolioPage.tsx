@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { projectsAPI } from '@/lib/api';
 import Layout from '@/components/Layout';
 import ScrollReveal from '@/components/ScrollReveal';
 import { IMAGES } from '@/lib/constants';
@@ -17,22 +17,30 @@ const PortfolioPage: React.FC = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      const { data } = await supabase.from('projects').select('*').order('created_at', { ascending: false });
-      if (data) {
+      try {
+        const data = await projectsAPI.getAll('All');
         setProjects(data);
         setFiltered(data);
+      } catch (error) {
+        console.error('Failed to fetch projects:', error);
       }
       setLoading(false);
     };
     fetch();
   }, []);
 
-  const handleFilter = (cat: string) => {
+  const handleFilter = async (cat: string) => {
     setActiveFilter(cat);
     if (cat === 'All') {
       setFiltered(projects);
     } else {
-      setFiltered(projects.filter(p => p.category === cat));
+      try {
+        const data = await projectsAPI.getAll(cat);
+        setFiltered(data);
+      } catch (error) {
+        console.error('Failed to fetch filtered projects:', error);
+        setFiltered([]);
+      }
     }
   };
 

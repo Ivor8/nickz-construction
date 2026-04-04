@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { servicesAPI } from '@/lib/api';
 import Layout from '@/components/Layout';
 import ScrollReveal from '@/components/ScrollReveal';
 import { IMAGES } from '@/lib/constants';
@@ -13,8 +13,12 @@ const ServicesPage: React.FC = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      const { data } = await supabase.from('services').select('*').order('sort_order');
-      if (data) setServices(data);
+      try {
+        const data = await servicesAPI.getAll();
+        setServices(data);
+      } catch (error) {
+        console.error('Failed to fetch services:', error);
+      }
       setLoading(false);
     };
     fetch();

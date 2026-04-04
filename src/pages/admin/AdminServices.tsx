@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { servicesAPI } from '@/lib/api';
 import type { Service } from '@/lib/types';
 import { Plus, Pencil, Trash2, X, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const emptyService = { title: '', slug: '', short_description: '', description: '', image_url: '', benefits: '', process_steps: '', icon: 'building', sort_order: 0 };
+const emptyService = { title: '', slug: '', short_description: '', description: '', image_url: '', benefits: '', process_steps: '', icon: 'building', sort_order: 0, imageFile: null as File | null };
 
 const AdminServices: React.FC = () => {
   const [services, setServices] = useState<Service[]>([]);
@@ -16,8 +16,12 @@ const AdminServices: React.FC = () => {
   const { toast } = useToast();
 
   const fetchServices = async () => {
-    const { data } = await supabase.from('services').select('*').order('sort_order');
-    if (data) setServices(data);
+    try {
+      const data = await servicesAPI.getAllAdmin();
+      setServices(data);
+    } catch (error) {
+      console.error('Failed to fetch services:', error);
+    }
     setLoading(false);
   };
 
@@ -32,33 +36,38 @@ const AdminServices: React.FC = () => {
       return;
     }
     setSaving(true);
-    const payload = {
-      title: form.title,
-      slug: form.slug || generateSlug(form.title),
-      short_description: form.short_description,
-      description: form.description,
-      image_url: form.image_url,
-      benefits: form.benefits ? form.benefits.split('\n').filter(Boolean) : [],
-      process_steps: form.process_steps ? form.process_steps.split('\n').filter(Boolean) : [],
-      icon: form.icon,
-      sort_order: form.sort_order,
-    };
 
-    let error;
-    if (editing) {
-      ({ error } = await supabase.from('services').update(payload).eq('id', editing));
-    } else {
-      ({ error } = await supabase.from('services').insert(payload));
+    const formData = new FormData();
+    formData.append('title', form.title);
+    formData.append('slug', form.slug || generateSlug(form.title));
+    formData.append('short_description', form.short_description);
+    formData.append('description', form.description);
+    formData.append('benefits', JSON.stringify(form.benefits ? form.benefits.split('\n').filter(Boolean) : []));
+    formData.append('process_steps', JSON.stringify(form.process_steps ? form.process_steps.split('\n').filter(Boolean) : []));
+    formData.append('icon', form.icon);
+    formData.append('sort_order', form.sort_order.toString());
+    
+    if (form.imageFile) {
+      formData.append('image_url', form.imageFile);
     }
-    setSaving(false);
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Success', description: `Service ${editing ? 'updated' : 'created'} successfully.` });
+
+    try {
+      if (editing) {
+        await servicesAPI.update(editing, formData);
+        toast({ title: 'Success', description: 'Service updated successfully.' });
+      } else {
+        await servicesAPI.create(formData);
+        toast({ title: 'Success', description: 'Service created successfully.' });
+      }
+      
       setShowForm(false);
       setEditing(null);
       setForm(emptyService);
       fetchServices();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to save service.', variant: 'destructive' });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -73,6 +82,7 @@ const AdminServices: React.FC = () => {
       process_steps: service.process_steps?.join('\n') || '',
       icon: service.icon || 'building',
       sort_order: service.sort_order || 0,
+      imageFile: null,
     });
     setEditing(service.id);
     setShowForm(true);
@@ -80,12 +90,12 @@ const AdminServices: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this service?')) return;
-    const { error } = await supabase.from('services').delete().eq('id', id);
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else {
+    try {
+      await servicesAPI.delete(id);
       toast({ title: 'Deleted', description: 'Service deleted successfully.' });
       fetchServices();
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to delete service.', variant: 'destructive' });
     }
   };
 
@@ -132,8 +142,16 @@ const AdminServices: React.FC = () => {
                 <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={4} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#1F2F8F] outline-none text-sm resize-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                <input type="url" value={form.image_url} onChange={e => setForm(p => ({ ...p, image_url: e.target.value }))} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#1F2F8F] outline-none text-sm" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image Upload</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={e => setForm(p => ({ ...p, imageFile: e.target.files?.[0] || null }))} 
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#1F2F8F] outline-none text-sm" 
+                />
+                {form.image_url && !form.imageFile && (
+                  <p className="text-xs text-gray-500 mt-1">Current: {form.image_url}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Benefits (one per line)</label>
