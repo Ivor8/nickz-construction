@@ -13,7 +13,7 @@
             "destination": "/index.html"
         },
         {
-            "source": "/(.*)",
+            "source": "/((?!api|admin).*)",
             "destination": "/index.html"
         }
     ],
