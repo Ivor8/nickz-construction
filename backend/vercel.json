@@ -4,6 +4,10 @@
         {
             "src": "server.js",
             "use": "@vercel/node"
+        },
+        {
+            "src": "uploads/**/*",
+            "use": "@vercel/static"
         }
     ],
     "routes": [
@@ -35,6 +39,19 @@
                 {
                     "key": "Access-Control-Allow-Headers",
                     "value": "Content-Type, Authorization"
+                }
+            ]
+        },
+        {
+            "source": "/uploads/(.*)",
+            "headers": [
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "https://nickz-construction.vercel.app"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
                 }
             ]
         }
