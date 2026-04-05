@@ -29,6 +29,21 @@ const PORT = process.env.PORT || 5001;
 // Middleware
 // app.use(helmet()); // Temporarily disabled for debugging
 app.use(morgan('dev'));
+
+// Manual CORS middleware for Vercel serverless functions
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://nickz-construction.vercel.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
+  }
+  next();
+});
+
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:5173',
