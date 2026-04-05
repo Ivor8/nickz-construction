@@ -5,6 +5,14 @@
             "destination": "https://nickz-construction-backend2.vercel.app/api/$1"
         },
         {
+            "source": "/admin",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/admin/(.*)",
+            "destination": "/index.html"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
