@@ -1,8 +1,36 @@
 {
     "rewrites": [
         {
+            "source": "/api/(.*)",
+            "destination": "https://nickz-construction.onrender.com/api/$1"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
-    ]
+    ],
+    "headers": [
+        {
+            "source": "/api/(.*)",
+            "headers": [
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
+                },
+                {
+                    "key": "Access-Control-Allow-Methods",
+                    "value": "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+                },
+                {
+                    "key": "Access-Control-Allow-Headers",
+                    "value": "Content-Type, Authorization"
+                }
+            ]
+        }
+    ],
+    "build": {
+        "env": {
+            "VITE_API_URL": "https://nickz-construction.vercel.app/api"
+        }
+    }
 }
