@@ -125,9 +125,9 @@ const ContactPage: React.FC = () => {
               <div className="space-y-6">
                 <div className="rounded-xl overflow-hidden shadow-sm h-80">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d254936.70243984!2d9.6510974!3d4.0510564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1061128be2e1fe6d%3A0x92daa1444781c48b!2sDouala%2C%20Cameroon!5e0!3m2!1sen!2s!4v1"
-                    width="100%"
-                    height="100%"
+                    src="https://www.google.com/maps/embed?pb=!1m28!1m12!1m3!1d254824.83745854822!2d11.219464253425!3d3.6695954748660524!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m13!3e6!4m5!1s0x108bcf7a309a7977%3A0x7f54bad35e693c51!2zWWFvdW5kw6k!3m2!1d3.8616853!2d11.5202292!4m5!1s0x10899c8bee8b3525%3A0x52cb0fbd079a3e0c!2sMbalngong!3m2!1d3.4768505999999997!2d11.2703587!5e0!3m2!1sen!2scm!4v1775568550681!5m2!1sen!2scm"
+                    width="600"
+                    height="450"
                     style={{ border: 0 }}
                     allowFullScreen
                     loading="lazy"

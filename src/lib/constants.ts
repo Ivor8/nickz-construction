@@ -9,7 +9,7 @@ export const BRAND = {
   whatsapp: '237659820956',
   facebook: 'https://web.facebook.com/profile.php?id=100091741041856',
   instagram: 'https://instagram.com/nickztechconstruction',
-  address: 'Douala, Cameroon',
+  address: 'Yaounde Mbalngong',
 };
 
 export const COLORS = {

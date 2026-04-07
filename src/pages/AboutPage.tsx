@@ -25,9 +25,9 @@ const AboutPage: React.FC = () => {
   }, []);
 
   const milestones = [
-  { year: '2010', title: 'Company Founded', desc: 'Nickztech Construction was established in Douala, Cameroon.' },
-  { year: '2013', title: 'First Major Project', desc: 'Completed our first commercial building project in Douala.' },
-  { year: '2016', title: 'Regional Expansion', desc: 'Expanded operations to Yaoundé and other major cities.' },
+  { year: '2010', title: 'Company Founded', desc: 'Nickztech Construction was established in Yaounde Mbalngong.' },
+  { year: '2013', title: 'First Major Project', desc: 'Completed our first commercial building project in Yaounde Mbalngong.' },
+  { year: '2016', title: 'Regional Expansion', desc: 'Expanded operations to Yaounde Mbalngong and other major cities.' },
   { year: '2019', title: 'International Growth', desc: 'Began projects in neighboring countries.' },
   { year: '2022', title: '150+ Projects', desc: 'Reached the milestone of 150 completed projects.' },
   { year: '2025', title: 'Industry Leader', desc: 'Recognized as one of Cameroon\'s top construction firms.' },
@@ -62,14 +62,14 @@ const AboutPage: React.FC = () => {
               <span className="text-[#F5A623] font-semibold text-sm uppercase tracking-wider">Who We Are</span>
               <h2 className="text-3xl md:text-4xl font-bold text-[#1F2F8F] mt-2 mb-6">Building Dreams Into Reality Since 2010</h2>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Nickztech Construction Co Ltd is a leading construction company headquartered in Douala, Cameroon. Founded with a vision to transform the construction landscape in Central Africa, we have grown from a small local contractor to a respected name in the industry, delivering projects across multiple countries.
+                Nickztech Construction Co Ltd is a leading construction              Headquartered in Yaounde Mbalngong, Cameroon. Founded with a vision to transform the construction landscape in Central Africa, we have grown from a small local contractor to a respected name in the industry, delivering projects across multiple countries.
               </p>
               <p className="text-gray-600 leading-relaxed mb-8">
                 Our success is built on a foundation of integrity, quality craftsmanship, and an unwavering commitment to client satisfaction. Every project we undertake reflects our dedication to excellence and our passion for building structures that stand the test of time.
               </p>
               <div className="grid grid-cols-2 gap-6">
                 <div className="bg-[#F4F4F4] rounded-xl p-5">
-                  <Target className="w-8 h-8 text-[#F5A623] mb-3" />
+                  <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d254936.70243984!2d9.6510974!3d4.0510564!2m3!1f0!2f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1061128be2e1fe6d%3A0x92daa1444781c48b!2sYaounde%20Mbalngong!5e0!3m2!1sen!2s!4v1" width="100%" height="200" frameBorder="0" style={{border:0}} allowFullScreen></iframe>
                   <h4 className="font-bold text-[#1F2F8F] mb-2">Our Mission</h4>
                   <p className="text-sm text-gray-600">To deliver exceptional construction services that exceed client expectations while maintaining the highest standards of safety and quality.</p>
                 </div>
